@@ -28,6 +28,20 @@ var providers = {
 					return parseFloat(res.body);
 				});
 			}
+		},
+		bchmainnet: {
+			blockexplorer: function (addr) {
+				return request.get('https://bitcoincash.blockexplorer.com/api/addr/' + addr + '/balance').send().then(function (res) {
+					return parseFloat(res.body);
+				});
+			}
+		},
+		bchtestnet: {
+			blockexplorer: function (addr) {
+				return request.get('https://api.blocktrail.com/v1/btc/address/' + addr + '?api_key=1403ca66d533c51a731bd3e7bcba960324b6904f').send().then(function (res) {
+					return parseFloat(res.body.balance);
+				});
+			}
 		}
 	},
 	/**
@@ -43,6 +57,20 @@ var providers = {
 			}
 		},
 		testnet: {
+			earn: function (feeName) {
+				return request.get('https://bitcoinfees.earn.com/api/v1/fees/recommended').send().then(function (res) {
+					return res.body[feeName + "Fee"];
+				});
+			}
+		},
+		bchmainnet: {
+			earn: function (feeName) {
+				return request.get('https://bitcoinfees.earn.com/api/v1/fees/recommended').send().then(function (res) {
+					return res.body[feeName + "Fee"];
+				});
+			}
+		},
+		bchtestnet: {
 			earn: function (feeName) {
 				return request.get('https://bitcoinfees.earn.com/api/v1/fees/recommended').send().then(function (res) {
 					return res.body[feeName + "Fee"];
@@ -94,6 +122,20 @@ var providers = {
 					});
 				});
 			}
+		},
+		bchmainnet: {
+			blockexplorer: function (addr) {
+				return request.get('https://bitcoincash.blockexplorer.com/api/addr/' + addr + '/utxo?noCache=1').send().then(function (res) {
+					return res.body.map(function (e) {
+						return {
+							txid: e.txid,
+							vout: e.vout,
+							satoshis: e.satoshis,
+							confirmations: e.confirmations
+						};
+					});
+				});
+			}
 		}
 	},
 	/**
@@ -116,18 +158,27 @@ var providers = {
 			blockcypher: function (hexTrans) {
 				return request.post('https://api.blockcypher.com/v1/btc/test3/txs/push').send('{"tx":"' + hexTrans + '"}');
 			}
-		}
+		},
+		bchmainnet: {
+			blockexplorer: function (hexTrans) {
+				return request.post('https://bitcoincash.blockexplorer.com/api/tx/send').send('rawtx: ' + hexTrans);
+			}
+		},
 	}
 }
 
 //Set default providers
 providers.balance.mainnet.default = providers.balance.mainnet.blockexplorer;
+providers.balance.bchmainnet.default = providers.balance.bchmainnet.blockexplorer;
 providers.balance.testnet.default = providers.balance.testnet.blockexplorer;
 providers.fees.mainnet.default = providers.fees.mainnet.earn;
+providers.fees.bchmainnet.default = providers.fees.bchmainnet.earn;
 providers.fees.testnet.default = providers.fees.testnet.earn;
 providers.utxo.mainnet.default = providers.utxo.mainnet.blockexplorer;
+providers.utxo.bchmainnet.default = providers.utxo.bchmainnet.blockexplorer;
 providers.utxo.testnet.default = providers.utxo.testnet.blockexplorer;
 providers.pushtx.mainnet.default = providers.pushtx.mainnet.blockchain;
+providers.pushtx.bchmainnet.default = providers.pushtx.bchmainnet.blockchain;
 providers.pushtx.testnet.default = providers.pushtx.testnet.blockcypher;
 
 function getBalance (addr, options) {
